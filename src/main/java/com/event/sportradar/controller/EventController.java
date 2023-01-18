@@ -18,6 +18,11 @@ public class EventController {
         this.appService = appService;
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = "getAllCompetitors")
+    public void getAllCompetitors() {
+        appService.getAllCompetitorsAlphabetically();
+    }
+
     @RequestMapping(method = RequestMethod.POST, value = "createProbability")
     public void createProbability(@RequestParam final int range) {
         appService.compareProbability(range);
