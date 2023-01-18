@@ -4,14 +4,14 @@ import com.event.sportradar.input.Reader;
 import com.event.sportradar.output.Printer;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class AppService {
 
     private static final Reader reader = new Reader();
-    private static final List<String> teams = new ArrayList<>();
+    private static final List<String> teamsList = new ArrayList<>();
+    private static final Set<String> teamsSet = new HashSet<>();
     private static final int HOME_TEAM = 0;
     private static final int AWAY_TEAM = 1;
     private static final int DATE_LENGTH = 19;
@@ -25,35 +25,47 @@ public class AppService {
         } else {
             for (int i = 0; i < range; i++) {
                 for (int j = 0; j < reader.getEvents().get(i).getCompetitors().size(); j++) {
-                    teams.add(reader.getEvents().get(i).getCompetitors().get(j).getName());
+                    teamsList.add(reader.getEvents().get(i).getCompetitors().get(j).getName());
                 }
                 if (reader.getEvents().get(i).getVenue() == null) {
                     compareProbabilityWithoutVenue(i);
                 } else {
                     compareProbabilityWithVenue(i);
                 }
-                teams.clear();
+                teamsList.clear();
             }
         }
+    }
+
+    public void getAllCompetitorsAlphabetically() {
+        reader.readFile();
+        for (int i = 0; i < reader.getEvents().size(); i++) {
+            for (int j = 0; j < reader.getEvents().get(i).getCompetitors().size(); j++) {
+                teamsSet.add(reader.getEvents().get(i).getCompetitors().get(j).getName());
+            }
+        }
+        TreeSet<String> treeSet = new TreeSet<>(teamsSet);
+        Printer.printCompetitors(treeSet);
+        teamsSet.clear();
     }
 
     private void compareProbabilityWithVenue(final int i) {
         if (reader.getEvents().get(i).getProbabilityAwayTeamWinner() > reader.getEvents().get(i).getProbabilityHomeTeamWinner()
                 && reader.getEvents().get(i).getProbabilityAwayTeamWinner() > reader.getEvents().get(i).getProbabilityDraw()) {
-            Printer.printResultWithVenue(SkirmishResult.WIN.getValue(), teams.get(HOME_TEAM), teams.get(AWAY_TEAM),
+            Printer.printResultWithVenue(SkirmishResult.WIN.getValue(), teamsList.get(HOME_TEAM), teamsList.get(AWAY_TEAM),
                     reader.getEvents().get(i).getVenue().getCityName(),
                     reader.getEvents().get(i).getVenue().getName(),
                     reader.getEvents().get(i).getStartDate(),
-                    teams.get(AWAY_TEAM), DATE_LENGTH, BLUE, RESET);
+                    teamsList.get(AWAY_TEAM), DATE_LENGTH, BLUE, RESET);
         } else if (reader.getEvents().get(i).getProbabilityHomeTeamWinner() > reader.getEvents().get(i).getProbabilityAwayTeamWinner()
                 && reader.getEvents().get(i).getProbabilityHomeTeamWinner() > reader.getEvents().get(i).getProbabilityDraw()) {
-            Printer.printResultWithVenue(SkirmishResult.WIN.getValue(), teams.get(HOME_TEAM), teams.get(AWAY_TEAM),
+            Printer.printResultWithVenue(SkirmishResult.WIN.getValue(), teamsList.get(HOME_TEAM), teamsList.get(AWAY_TEAM),
                     reader.getEvents().get(i).getVenue().getCityName(),
                     reader.getEvents().get(i).getVenue().getName(),
                     reader.getEvents().get(i).getStartDate(),
-                    teams.get(HOME_TEAM), DATE_LENGTH, BLUE, RESET);
+                    teamsList.get(HOME_TEAM), DATE_LENGTH, BLUE, RESET);
         } else {
-            Printer.printResultWithVenue(SkirmishResult.DRAW.getValue(), teams.get(HOME_TEAM), teams.get(AWAY_TEAM),
+            Printer.printResultWithVenue(SkirmishResult.DRAW.getValue(), teamsList.get(HOME_TEAM), teamsList.get(AWAY_TEAM),
                     reader.getEvents().get(i).getVenue().getCityName(),
                     reader.getEvents().get(i).getVenue().getName(),
                     reader.getEvents().get(i).getStartDate(),
@@ -64,16 +76,16 @@ public class AppService {
     private void compareProbabilityWithoutVenue(final int i) {
         if (reader.getEvents().get(i).getProbabilityAwayTeamWinner() > reader.getEvents().get(i).getProbabilityHomeTeamWinner()
                 && reader.getEvents().get(i).getProbabilityAwayTeamWinner() > reader.getEvents().get(i).getProbabilityDraw()) {
-            Printer.printResultWithoutVenue(SkirmishResult.WIN.getValue(), teams.get(HOME_TEAM), teams.get(AWAY_TEAM),
+            Printer.printResultWithoutVenue(SkirmishResult.WIN.getValue(), teamsList.get(HOME_TEAM), teamsList.get(AWAY_TEAM),
                     reader.getEvents().get(i).getStartDate(),
-                    teams.get(AWAY_TEAM), DATE_LENGTH, BLUE, RESET);
+                    teamsList.get(AWAY_TEAM), DATE_LENGTH, BLUE, RESET);
         } else if (reader.getEvents().get(i).getProbabilityHomeTeamWinner() > reader.getEvents().get(i).getProbabilityAwayTeamWinner()
                 && reader.getEvents().get(i).getProbabilityHomeTeamWinner() > reader.getEvents().get(i).getProbabilityDraw()) {
-            Printer.printResultWithoutVenue(SkirmishResult.WIN.getValue(), teams.get(HOME_TEAM), teams.get(AWAY_TEAM),
+            Printer.printResultWithoutVenue(SkirmishResult.WIN.getValue(), teamsList.get(HOME_TEAM), teamsList.get(AWAY_TEAM),
                     reader.getEvents().get(i).getStartDate(),
-                    teams.get(HOME_TEAM), DATE_LENGTH, BLUE, RESET);
+                    teamsList.get(HOME_TEAM), DATE_LENGTH, BLUE, RESET);
         } else {
-            Printer.printResultWithoutVenue(SkirmishResult.DRAW.getValue(), teams.get(HOME_TEAM), teams.get(AWAY_TEAM),
+            Printer.printResultWithoutVenue(SkirmishResult.DRAW.getValue(), teamsList.get(HOME_TEAM), teamsList.get(AWAY_TEAM),
                     reader.getEvents().get(i).getStartDate(),
                     null, DATE_LENGTH, BLUE, RESET);
         }
