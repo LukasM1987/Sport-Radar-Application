@@ -2,11 +2,8 @@ package com.event.sportradar.domain;
 
 import lombok.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
-@ToString
 public class Venue {
 
     private String id;

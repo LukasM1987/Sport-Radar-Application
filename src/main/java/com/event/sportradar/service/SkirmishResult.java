@@ -1,4 +1,4 @@
-package com.event.sportradar.Service;
+package com.event.sportradar.service;
 
 public enum SkirmishResult {
 

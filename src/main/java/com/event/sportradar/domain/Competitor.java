@@ -2,11 +2,8 @@ package com.event.sportradar.domain;
 
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
-@NoArgsConstructor
-@ToString
 public class Competitor {
 
     private String id;

@@ -1,30 +1,26 @@
 package com.event.sportradar.controller;
 
-import com.event.sportradar.Service.AppService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.event.sportradar.service.SportRadarService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/event")
+@RequestMapping("/sportRadar")
+@RequiredArgsConstructor
 public class EventController {
 
-    private final AppService appService;
+    private final SportRadarService sportRadarService;
 
-    @Autowired
-    public EventController(AppService appService) {
-        this.appService = appService;
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "getAllCompetitors")
+    @GetMapping(value = "/competitors")
     public void getAllCompetitors() {
-        appService.getAllCompetitorsAlphabetically();
+        sportRadarService.getAllCompetitorsAlphabetically();
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "createProbability")
-    public void createProbability(@RequestParam final int range) {
-        appService.compareProbability(range);
+    @GetMapping(value = "createProbability")
+    public void createProbability(@RequestParam(required = false) final Integer range) {
+        sportRadarService.compareProbability(range);
     }
 }

@@ -7,7 +7,9 @@ import com.github.tsohr.JSONArray;
 import com.github.tsohr.JSONException;
 import com.github.tsohr.JSONObject;
 import lombok.Getter;
-import lombok.Setter;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,12 +19,13 @@ import java.util.List;
 
 
 @Getter
-@Setter
+@Component
 public class Reader {
 
     private List<Event> events = new ArrayList<>();
     private List<Competitor> competitors = new ArrayList<>();
 
+    @EventListener(ApplicationReadyEvent.class)
     public void readFile() {
         JSONObject jsonObject = convertFile();
         JSONArray jsonArray = jsonObject.getJSONArray("Events");

@@ -1,6 +1,5 @@
 package com.event.sportradar.output;
 
-import java.util.List;
 import java.util.TreeSet;
 
 public class Printer {
