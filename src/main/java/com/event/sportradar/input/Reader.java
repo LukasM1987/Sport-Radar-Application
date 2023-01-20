@@ -20,8 +20,8 @@ import java.util.List;
 @Component
 public class Reader {
 
-    private List<Event> events = new ArrayList<>();
-    private List<Competitor> competitors = new ArrayList<>();
+    //private final List<Event> events = new ArrayList<>();
+    //private final List<Competitor> competitors = new ArrayList<>();
 
     @EventListener(ApplicationReadyEvent.class)
     public void readFile() {
@@ -49,7 +49,7 @@ public class Reader {
 
     private Venue readVenue(JSONObject eventObject) {
         Venue venue;
-        venue = ObjectCreator.getVenue(eventObject);
+        venue = ObjectCreator.createVenue(eventObject);
         return venue;
     }
 
