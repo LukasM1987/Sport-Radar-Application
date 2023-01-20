@@ -5,18 +5,16 @@ import com.event.sportradar.domain.Event;
 import com.event.sportradar.domain.Venue;
 import com.github.tsohr.JSONException;
 import com.github.tsohr.JSONObject;
-import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
 @Component
 public class ObjectCreator {
 
-    private static List<Event> events = new ArrayList<>();
-    private static List<Competitor> competitors = new ArrayList<>();
+    private static final List<Event> events = new ArrayList<>();
+    private static final List<Competitor> competitors = new ArrayList<>();
 
     public static void addEvent(JSONObject eventObject, Venue venue) {
         events.add(new Event(
@@ -46,7 +44,7 @@ public class ObjectCreator {
         ));
     }
 
-    public static Venue getVenue(JSONObject eventObject) {
+    public static Venue createVenue(JSONObject eventObject) {
         Venue venue;
         try {
             JSONObject venueObject = eventObject.getJSONObject("venue");

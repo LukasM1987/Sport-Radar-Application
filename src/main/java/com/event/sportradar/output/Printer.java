@@ -1,36 +1,33 @@
 package com.event.sportradar.output;
 
+import com.event.sportradar.domain.Result;
+
+import java.util.List;
 import java.util.TreeSet;
 
 public class Printer {
 
-    public static void printResultWithVenue(final int skirmishResult, String awayTeam, String homeTeam, String city, String stadium, String date, String winner, int dateLength, String initColor, String reset) {
-        switch (skirmishResult) {
-            case 0:
-                System.out.println(initColor + "{Event: " + homeTeam + " VS. " + awayTeam +
-                        ", Where: " + city + ", " + stadium + ", When: " + date.substring(0, dateLength) +
-                        ", Skirmish Result: " + winner + " probably will be the winner.}" + reset);
-                break;
-            case 1:
-                System.out.println(initColor + "{Event: " + homeTeam + " VS. " + awayTeam +
-                        ", Where: " + city + ", " + stadium + ", When: " + date.substring(0, dateLength) +
-                        ", Skirmish Result: Probably will be draw.}" + reset);
-                break;
-        }
-    }
-
-    public static void printResultWithoutVenue(final int skirmishResult, String awayTeam, String homeTeam, String date, String winner, int dateLength, String initColor, String reset) {
-        switch (skirmishResult) {
-            case 0:
-                System.out.println(initColor + "{Event: " + homeTeam + " VS. " + awayTeam +
-                        ", When: " + date.substring(0, dateLength) +
-                        ", Skirmish Result: " + winner + " probably will be the winner.}" + reset);
-                break;
-            case 1:
-                System.out.println(initColor + "{Event: " + homeTeam + " VS. " + awayTeam +
-                        ", When: " + date.substring(0, dateLength) +
-                        ", Skirmish Result: Probably will be draw.}" + reset);
-                break;
+    public static void printResults(int range, List<Result> results) {
+        for (int i = results.size() - range; i < results.size(); i++) {
+            if (results.get(i).getCity() == null) {
+                System.out.println("Event: Home team: "
+                        + results.get(i).getHomeTeam()
+                        + " VS. Away team: "
+                        + results.get(i).getAwayTeam()
+                        + ", Probability result: "
+                        + results.get(i).getSkirmishResult());
+            } else {
+                System.out.println("Event: Home team: "
+                        + results.get(i).getHomeTeam()
+                        + " VS. Away team: "
+                        + results.get(i).getAwayTeam()
+                        + ", Where: "
+                        + results.get(i).getCity()
+                        + ", "
+                        + results.get(i).getStadium()
+                        + ", Probability result: "
+                        + results.get(i).getSkirmishResult());
+            }
         }
     }
 
