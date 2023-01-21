@@ -16,11 +16,11 @@ public class EventController {
 
     @GetMapping(value = "/competitors")
     public void getAllCompetitors() {
-        sportRadarService.getAllCompetitorsAlphabetically();
+        sportRadarService.printAllCompetitorsAlphabetically();
     }
 
-    @GetMapping(value = "createProbability")
-    public void createProbability(@RequestParam(required = false) final Integer range) {
+    @GetMapping(value = "probabilities")
+    public void getProbabilities(@RequestParam(required = false) final Integer range) {
         sportRadarService.compareProbability(range);
     }
 }
