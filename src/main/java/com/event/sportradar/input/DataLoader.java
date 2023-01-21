@@ -1,7 +1,5 @@
 package com.event.sportradar.input;
 
-import com.event.sportradar.domain.Competitor;
-import com.event.sportradar.domain.Event;
 import com.event.sportradar.domain.Venue;
 import com.github.tsohr.JSONArray;
 import com.github.tsohr.JSONObject;
@@ -13,15 +11,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Component
-public class Reader {
-
-    //private final List<Event> events = new ArrayList<>();
-    //private final List<Competitor> competitors = new ArrayList<>();
+public class DataLoader {
 
     @EventListener(ApplicationReadyEvent.class)
     public void readFile() {
@@ -36,21 +29,19 @@ public class Reader {
             JSONArray competitorsArray = eventObject.getJSONArray("competitors");
             Venue venue = readVenue(eventObject);
             readCompetitors(competitorsArray);
-            ObjectCreator.addEvent(eventObject, venue);
+            DataStorage.addEvent(eventObject, venue);
         }
     }
 
     private void readCompetitors(JSONArray competitorsArray) {
         for (int i = 0; i < competitorsArray.length(); i++) {
             JSONObject competitorObject = competitorsArray.getJSONObject(i);
-            ObjectCreator.addCompetitor(competitorObject);
+            DataStorage.addCompetitor(competitorObject);
         }
     }
 
     private Venue readVenue(JSONObject eventObject) {
-        Venue venue;
-        venue = ObjectCreator.createVenue(eventObject);
-        return venue;
+        return DataStorage.createVenue(eventObject);
     }
 
     private JSONObject convertFile() {
@@ -60,7 +51,6 @@ public class Reader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        JSONObject jsonObject = new JSONObject(convertedFile);
-        return jsonObject;
+        return new JSONObject(convertedFile);
     }
 }

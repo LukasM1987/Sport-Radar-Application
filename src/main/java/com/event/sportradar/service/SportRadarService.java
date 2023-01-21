@@ -1,7 +1,8 @@
 package com.event.sportradar.service;
 
+import com.event.sportradar.domain.Competitor;
 import com.event.sportradar.domain.Result;
-import com.event.sportradar.input.ObjectCreator;
+import com.event.sportradar.input.DataStorage;
 import com.event.sportradar.output.Printer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class SportRadarService {
 
-    private final ObjectCreator objectCreator;
+    private final DataStorage dataStorage;
     private static final List<String> teams = new ArrayList<>();
     private static final List<Result> results = new ArrayList<>();
     private static final Set<String> teamsSet = new HashSet<>();
@@ -26,32 +27,31 @@ public class SportRadarService {
         if (range == null) {
             range = DEFAULT_RANGE;
         }
-        if (!isRangeValid(range)) {
+        if (isRangeValid(range)) {
             System.err.println("Range is to big, or is equals 0, or less then 0.");
             return;
         }
-        for (int i = 0; i < objectCreator.getEvents().size(); i++) {
+        for (int i = 0; i < dataStorage.getEvents().size(); i++) {
             addTeams(i);
-            compareCompetitors(i);
+            compareProbability(i);
         }
         sortListByProbability();
         Printer.printResults(range, results);
-        teams.clear();
-        results.clear();
     }
 
     private void addTeams(int i) {
         if (i == 0) {
-            for (int j = 0; j < objectCreator.getEvents().get(i).getCompetitors().size(); j++) {
-                teams.add(objectCreator.getEvents().get(i).getCompetitors().get(j).getName());
+            List<Competitor> competitors = dataStorage.getEvents().get(i).getCompetitors();
+            for (int j = 0; j < competitors.size(); j++) {
+                teams.add(dataStorage.getEvents().get(i).getCompetitors().get(j).getName());
             }
         }
     }
 
-    public void getAllCompetitorsAlphabetically() {
-        for (int i = 0; i < objectCreator.getEvents().size(); i++) {
-            for (int j = 0; j < objectCreator.getEvents().get(i).getCompetitors().size(); j++) {
-                teamsSet.add(objectCreator.getEvents().get(i).getCompetitors().get(j).getName());
+    public void printAllCompetitorsAlphabetically() {
+        for (int i = 0; i < dataStorage.getEvents().size(); i++) {
+            for (int j = 0; j < dataStorage.getEvents().get(i).getCompetitors().size(); j++) {
+                teamsSet.add(dataStorage.getEvents().get(i).getCompetitors().get(j).getName());
             }
         }
         TreeSet<String> treeSet = new TreeSet<>(teamsSet);
@@ -59,46 +59,54 @@ public class SportRadarService {
         teamsSet.clear();
     }
 
-    private void compareCompetitors(int i) {
-        if (objectCreator.getEvents().get(i).getProbabilityHomeTeamWinner()
-                > objectCreator.getEvents().get(i).getProbabilityAwayTeamWinner()
-                && objectCreator.getEvents().get(i).getProbabilityHomeTeamWinner()
-                > objectCreator.getEvents().get(i).getProbabilityDraw()) {
-            addResult(i, HOME_TEAM_WIN, objectCreator.getEvents().get(i).getProbabilityHomeTeamWinner());
-        } else if (objectCreator.getEvents().get(i).getProbabilityAwayTeamWinner()
-                > objectCreator.getEvents().get(i).getProbabilityHomeTeamWinner()
-                && objectCreator.getEvents().get(i).getProbabilityAwayTeamWinner()
-                > objectCreator.getEvents().get(i).getProbabilityDraw()) {
-            addResult(i, AWAY_TEAM_WIN, objectCreator.getEvents().get(i).getProbabilityAwayTeamWinner());
+    private void compareProbability(int i) {
+        if (dataStorage.getEvents().get(i).getProbabilityHomeTeamWinner()
+                > dataStorage.getEvents().get(i).getProbabilityAwayTeamWinner()
+                && dataStorage.getEvents().get(i).getProbabilityHomeTeamWinner()
+                > dataStorage.getEvents().get(i).getProbabilityDraw()) {
+            addResult(i, HOME_TEAM_WIN, dataStorage.getEvents().get(i).getProbabilityHomeTeamWinner());
+        } else if (dataStorage.getEvents().get(i).getProbabilityAwayTeamWinner()
+                > dataStorage.getEvents().get(i).getProbabilityHomeTeamWinner()
+                && dataStorage.getEvents().get(i).getProbabilityAwayTeamWinner()
+                > dataStorage.getEvents().get(i).getProbabilityDraw()) {
+            addResult(i, AWAY_TEAM_WIN, dataStorage.getEvents().get(i).getProbabilityAwayTeamWinner());
         } else {
-            addResult(i, RESULT_DRAW, objectCreator.getEvents().get(i).getProbabilityDraw());
+            addResult(i, RESULT_DRAW, dataStorage.getEvents().get(i).getProbabilityDraw());
         }
     }
 
     private void addResult(int i, String skirmishResult, double probability) {
-        int first = i * 2;
-        int second = first + 1;
-        if (objectCreator.getEvents().get(i).getVenue() == null) {
-            results.add(new Result(
-                    teams.get(first),
-                    teams.get(second),
-                    null,
-                    null,
-                    objectCreator.getEvents().get(i).getStartDate().substring(0, DATE_LENGTH),
-                    skirmishResult,
-                    probability)
+        int homeTeam = calculateHomeTeamIndex(i);
+        int awayTeam = calculateAwayTeamIndex(homeTeam);
+        if (dataStorage.getEvents().get(i).getVenue() == null) {
+            results.add(new Result.ResultBuilder()
+                    .homeTeam(teams.get(homeTeam))
+                    .awayTeam(teams.get(awayTeam))
+                    .date(dataStorage.getEvents().get(i).getStartDate().substring(0, DATE_LENGTH))
+                    .skirmishResult(skirmishResult)
+                    .highestProbability(probability)
+                    .build()
             );
         } else {
-            results.add(new Result(
-                    teams.get(first),
-                    teams.get(second),
-                    objectCreator.getEvents().get(i).getVenue().getCityName(),
-                    objectCreator.getEvents().get(i).getVenue().getName(),
-                    objectCreator.getEvents().get(i).getStartDate().substring(0, DATE_LENGTH),
-                    skirmishResult,
-                    probability)
+            results.add(new Result.ResultBuilder()
+                    .homeTeam(teams.get(homeTeam))
+                    .awayTeam(teams.get(awayTeam))
+                    .city(dataStorage.getEvents().get(i).getVenue().getCityName())
+                    .stadium(dataStorage.getEvents().get(i).getVenue().getName())
+                    .date(dataStorage.getEvents().get(i).getStartDate().substring(0, DATE_LENGTH))
+                    .skirmishResult(skirmishResult)
+                    .highestProbability(probability)
+                    .build()
             );
         }
+    }
+
+    private int calculateAwayTeamIndex(int homeTeam) {
+        return homeTeam + 1;
+    }
+
+    private int calculateHomeTeamIndex(int i) {
+        return i * 2;
     }
 
     private void sortListByProbability() {
@@ -106,9 +114,6 @@ public class SportRadarService {
     }
 
     private boolean isRangeValid(Integer range) {
-        if (range > objectCreator.getEvents().size() || range <= 0) {
-            return false;
-        }
-        return true;
+        return range > dataStorage.getEvents().size() || range <= 0;
     }
 }

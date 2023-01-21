@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class ObjectCreator {
+public class DataStorage {
 
     private static final List<Event> events = new ArrayList<>();
     private static final List<Competitor> competitors = new ArrayList<>();
