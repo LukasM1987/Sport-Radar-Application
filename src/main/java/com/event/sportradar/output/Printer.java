@@ -12,21 +12,23 @@ public class Printer {
             if (results.get(i).getCity() == null) {
                 System.out.println("Event: Home team: "
                         + results.get(i).getHomeTeam()
-                        + " VS. Away team: "
+                        + " (" + results.get(i).getHomeTeamCountry() + ") VS. Away team: "
                         + results.get(i).getAwayTeam()
-                        + ", Probability result: "
-                        + results.get(i).getSkirmishResult());
+                        + " (" + results.get(i).getAwayTeamCountry() + "), Probability result: "
+                        + results.get(i).getSkirmishResult()
+                        + " (" + results.get(i).getHighestProbability() + ')');
             } else {
                 System.out.println("Event: Home team: "
                         + results.get(i).getHomeTeam()
-                        + " VS. Away team: "
+                        + " (" + results.get(i).getHomeTeamCountry() + ") VS. Away team: "
                         + results.get(i).getAwayTeam()
-                        + ", Where: "
+                        + " (" + results.get(i).getAwayTeamCountry() + "), Where: "
                         + results.get(i).getCity()
                         + ", "
                         + results.get(i).getStadium()
                         + ", Probability result: "
-                        + results.get(i).getSkirmishResult());
+                        + results.get(i).getSkirmishResult()
+                        + " (" + results.get(i).getHighestProbability() + ')');
             }
         }
     }
