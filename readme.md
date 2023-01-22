@@ -11,7 +11,7 @@
 > Follow this steps:
 - step 1 - If you don't have a Git you can download it from [_here_](https://git-scm.com/downloads)
 - step 2 - Click right button mouse on place where you want put the project on disk
-- step 3 - Use `Git Bash Here` command and clone this repository command: `git clone https://github.com/LukasM1987/Sport-Radar-Application`
+- step 3 - Use `Git Bash Here` command and paste this repository command: `git clone https://github.com/LukasM1987/Sport-Radar-Application`
 
 ## How to run
 > Follow this steps:
