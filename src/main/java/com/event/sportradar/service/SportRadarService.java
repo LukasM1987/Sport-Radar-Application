@@ -14,7 +14,8 @@ import java.util.*;
 public class SportRadarService {
 
     private final DataStorage dataStorage;
-    private static final List<String> teams = new ArrayList<>();
+    private static final List<String> teamNames = new ArrayList<>();
+    private static final List<String> teamCountries = new ArrayList<>();
     private static final List<Result> results = new ArrayList<>();
     private static final Set<String> teamsSet = new HashSet<>();
     private static final int DATE_LENGTH = 19;
@@ -32,18 +33,19 @@ public class SportRadarService {
             return;
         }
         for (int i = 0; i < dataStorage.getEvents().size(); i++) {
-            addTeams(i);
+            addTeamsInfo(i);
             compareProbability(i);
         }
         sortListByProbability();
         Printer.printResults(range, results);
     }
 
-    private void addTeams(int i) {
+    private void addTeamsInfo(int i) {
         if (i == 0) {
             List<Competitor> competitors = dataStorage.getEvents().get(i).getCompetitors();
             for (int j = 0; j < competitors.size(); j++) {
-                teams.add(dataStorage.getEvents().get(i).getCompetitors().get(j).getName());
+                teamNames.add(dataStorage.getEvents().get(i).getCompetitors().get(j).getName());
+                teamCountries.add(dataStorage.getEvents().get(i).getCompetitors().get(j).getCountry());
             }
         }
     }
@@ -56,23 +58,30 @@ public class SportRadarService {
         }
         TreeSet<String> treeSet = new TreeSet<>(teamsSet);
         Printer.printCompetitors(treeSet);
-        teamsSet.clear();
     }
 
     private void compareProbability(int i) {
-        if (dataStorage.getEvents().get(i).getProbabilityHomeTeamWinner()
-                > dataStorage.getEvents().get(i).getProbabilityAwayTeamWinner()
-                && dataStorage.getEvents().get(i).getProbabilityHomeTeamWinner()
-                > dataStorage.getEvents().get(i).getProbabilityDraw()) {
-            addResult(i, HOME_TEAM_WIN, dataStorage.getEvents().get(i).getProbabilityHomeTeamWinner());
-        } else if (dataStorage.getEvents().get(i).getProbabilityAwayTeamWinner()
-                > dataStorage.getEvents().get(i).getProbabilityHomeTeamWinner()
-                && dataStorage.getEvents().get(i).getProbabilityAwayTeamWinner()
-                > dataStorage.getEvents().get(i).getProbabilityDraw()) {
-            addResult(i, AWAY_TEAM_WIN, dataStorage.getEvents().get(i).getProbabilityAwayTeamWinner());
+        if (getProbabilityHomeTeamWinner(i) > getProbabilityAwayTeamWinner(i)
+                && getProbabilityHomeTeamWinner(i) > getProbabilityDraw(i)) {
+            addResult(i, HOME_TEAM_WIN, getProbabilityHomeTeamWinner(i));
+        } else if (getProbabilityAwayTeamWinner(i) > getProbabilityHomeTeamWinner(i)
+                && getProbabilityAwayTeamWinner(i) > getProbabilityDraw(i)) {
+            addResult(i, AWAY_TEAM_WIN, getProbabilityAwayTeamWinner(i));
         } else {
-            addResult(i, RESULT_DRAW, dataStorage.getEvents().get(i).getProbabilityDraw());
+            addResult(i, RESULT_DRAW, getProbabilityDraw(i));
         }
+    }
+
+    private double getProbabilityDraw(int i) {
+        return dataStorage.getEvents().get(i).getProbabilityDraw();
+    }
+
+    private double getProbabilityAwayTeamWinner(int i) {
+        return dataStorage.getEvents().get(i).getProbabilityAwayTeamWinner();
+    }
+
+    private double getProbabilityHomeTeamWinner(int i) {
+        return dataStorage.getEvents().get(i).getProbabilityHomeTeamWinner();
     }
 
     private void addResult(int i, String skirmishResult, double probability) {
@@ -80,8 +89,10 @@ public class SportRadarService {
         int awayTeam = calculateAwayTeamIndex(homeTeam);
         if (dataStorage.getEvents().get(i).getVenue() == null) {
             results.add(new Result.ResultBuilder()
-                    .homeTeam(teams.get(homeTeam))
-                    .awayTeam(teams.get(awayTeam))
+                    .homeTeam(teamNames.get(homeTeam))
+                    .homeTeamCountry(teamCountries.get(homeTeam))
+                    .awayTeam(teamNames.get(awayTeam))
+                    .awayTeamCountry(teamCountries.get(awayTeam))
                     .date(dataStorage.getEvents().get(i).getStartDate().substring(0, DATE_LENGTH))
                     .skirmishResult(skirmishResult)
                     .highestProbability(probability)
@@ -89,8 +100,10 @@ public class SportRadarService {
             );
         } else {
             results.add(new Result.ResultBuilder()
-                    .homeTeam(teams.get(homeTeam))
-                    .awayTeam(teams.get(awayTeam))
+                    .homeTeam(teamNames.get(homeTeam))
+                    .homeTeamCountry(teamCountries.get(homeTeam))
+                    .awayTeam(teamNames.get(awayTeam))
+                    .awayTeamCountry(teamCountries.get(awayTeam))
                     .city(dataStorage.getEvents().get(i).getVenue().getCityName())
                     .stadium(dataStorage.getEvents().get(i).getVenue().getName())
                     .date(dataStorage.getEvents().get(i).getStartDate().substring(0, DATE_LENGTH))

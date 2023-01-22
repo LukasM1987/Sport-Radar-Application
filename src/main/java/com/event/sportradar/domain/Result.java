@@ -6,7 +6,9 @@ import lombok.Data;
 public class Result {
 
     private String homeTeam;
+    private String homeTeamCountry;
     private String awayTeam;
+    private String awayTeamCountry;
     private String city;
     private String stadium;
     private String date;
@@ -16,7 +18,9 @@ public class Result {
     public static class ResultBuilder {
 
         private String homeTeam;
+        private String homeTeamCountry;
         private String awayTeam;
+        private String awayTeamCountry;
         private String city;
         private String stadium;
         private String date;
@@ -28,8 +32,18 @@ public class Result {
             return this;
         }
 
+        public ResultBuilder homeTeamCountry(String homeTeamCountry) {
+            this.homeTeamCountry = homeTeamCountry;
+            return this;
+        }
+
         public ResultBuilder awayTeam(String awayTeam) {
             this.awayTeam = awayTeam;
+            return this;
+        }
+
+        public ResultBuilder awayTeamCountry(String awayTeamCountry) {
+            this.awayTeamCountry = awayTeamCountry;
             return this;
         }
 
@@ -59,13 +73,15 @@ public class Result {
         }
 
         public Result build() {
-            return new Result(homeTeam, awayTeam, city, stadium, date, skirmishResult, highestProbability);
+            return new Result(homeTeam, homeTeamCountry, awayTeam, awayTeamCountry, city, stadium, date, skirmishResult, highestProbability);
         }
     }
 
-    private Result(String homeTeam, String awayTeam, String city, String stadium, String date, String skirmishResult, double highestProbability) {
+    public Result(String homeTeam, String homeTeamCountry, String awayTeam, String awayTeamCountry, String city, String stadium, String date, String skirmishResult, double highestProbability) {
         this.homeTeam = homeTeam;
+        this.homeTeamCountry = homeTeamCountry;
         this.awayTeam = awayTeam;
+        this.awayTeamCountry = awayTeamCountry;
         this.city = city;
         this.stadium = stadium;
         this.date = date;
