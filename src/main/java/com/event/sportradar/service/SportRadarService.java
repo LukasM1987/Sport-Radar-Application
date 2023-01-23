@@ -14,10 +14,6 @@ import java.util.*;
 public class SportRadarService {
 
     private final DataStorage dataStorage;
-    private static final List<String> teamNames = new ArrayList<>();
-    private static final List<String> teamCountries = new ArrayList<>();
-    private static final List<Result> results = new ArrayList<>();
-    private static final Set<String> teamsSet = new HashSet<>();
     private static final int DATE_LENGTH = 19;
     private static final Integer DEFAULT_RANGE = 10;
     private static final String HOME_TEAM_WIN = "home team will win";
@@ -33,97 +29,72 @@ public class SportRadarService {
             return;
         }
         for (int i = 0; i < dataStorage.getEvents().size(); i++) {
-            addTeamsInfo(i);
+            getCompetitors(i);
             compareProbability(i);
         }
         sortListByProbability();
-        Printer.printResults(range, results);
+        Printer.printResults(range, dataStorage.getResults());
     }
 
-    private void addTeamsInfo(int i) {
-        if (i == 0) {
-            List<Competitor> competitors = dataStorage.getEvents().get(i).getCompetitors();
-            for (int j = 0; j < competitors.size(); j++) {
-                teamNames.add(dataStorage.getEvents().get(i).getCompetitors().get(j).getName());
-                teamCountries.add(dataStorage.getEvents().get(i).getCompetitors().get(j).getCountry());
-            }
-        }
+    private List<Competitor> getCompetitors(int currentIndex) {
+        return dataStorage.getEvents().get(currentIndex).getCompetitors();
     }
 
     public void printAllCompetitorsAlphabetically() {
         for (int i = 0; i < dataStorage.getEvents().size(); i++) {
             for (int j = 0; j < dataStorage.getEvents().get(i).getCompetitors().size(); j++) {
-                teamsSet.add(dataStorage.getEvents().get(i).getCompetitors().get(j).getName());
+                dataStorage.addTeamsNames(i, j);
             }
         }
-        TreeSet<String> treeSet = new TreeSet<>(teamsSet);
+        TreeSet<String> treeSet = new TreeSet<>(dataStorage.getTeamNamesSet());
         Printer.printCompetitors(treeSet);
     }
 
-    private void compareProbability(int i) {
-        if (getProbabilityHomeTeamWinner(i) > getProbabilityAwayTeamWinner(i)
-                && getProbabilityHomeTeamWinner(i) > getProbabilityDraw(i)) {
-            addResult(i, HOME_TEAM_WIN, getProbabilityHomeTeamWinner(i));
-        } else if (getProbabilityAwayTeamWinner(i) > getProbabilityHomeTeamWinner(i)
-                && getProbabilityAwayTeamWinner(i) > getProbabilityDraw(i)) {
-            addResult(i, AWAY_TEAM_WIN, getProbabilityAwayTeamWinner(i));
+    private void compareProbability(int currentIndex) {
+        double home = getProbabilityHomeTeamWinner(currentIndex);
+        double away = getProbabilityAwayTeamWinner(currentIndex);
+        double draw = getProbabilityDraw(currentIndex);
+        if (home > away && home > draw) {
+            addResult(currentIndex, HOME_TEAM_WIN, getProbabilityHomeTeamWinner(currentIndex));
+        } else if (away > home && away > draw) {
+            addResult(currentIndex, AWAY_TEAM_WIN, getProbabilityAwayTeamWinner(currentIndex));
         } else {
-            addResult(i, RESULT_DRAW, getProbabilityDraw(i));
+            addResult(currentIndex, RESULT_DRAW, getProbabilityDraw(currentIndex));
         }
     }
 
-    private double getProbabilityDraw(int i) {
-        return dataStorage.getEvents().get(i).getProbabilityDraw();
+    private double getProbabilityDraw(int currentIndex) {
+        return dataStorage.getEvents().get(currentIndex).getProbabilityDraw();
     }
 
-    private double getProbabilityAwayTeamWinner(int i) {
-        return dataStorage.getEvents().get(i).getProbabilityAwayTeamWinner();
+    private double getProbabilityAwayTeamWinner(int currentIndex) {
+        return dataStorage.getEvents().get(currentIndex).getProbabilityAwayTeamWinner();
     }
 
-    private double getProbabilityHomeTeamWinner(int i) {
-        return dataStorage.getEvents().get(i).getProbabilityHomeTeamWinner();
+    private double getProbabilityHomeTeamWinner(int currentIndex) {
+        return dataStorage.getEvents().get(currentIndex).getProbabilityHomeTeamWinner();
     }
 
-    private void addResult(int i, String skirmishResult, double probability) {
-        int homeTeam = calculateHomeTeamIndex(i);
-        int awayTeam = calculateAwayTeamIndex(homeTeam);
-        if (dataStorage.getEvents().get(i).getVenue() == null) {
-            results.add(new Result.ResultBuilder()
-                    .homeTeam(teamNames.get(homeTeam))
-                    .homeTeamCountry(teamCountries.get(homeTeam))
-                    .awayTeam(teamNames.get(awayTeam))
-                    .awayTeamCountry(teamCountries.get(awayTeam))
-                    .date(dataStorage.getEvents().get(i).getStartDate().substring(0, DATE_LENGTH))
-                    .skirmishResult(skirmishResult)
-                    .highestProbability(probability)
-                    .build()
-            );
-        } else {
-            results.add(new Result.ResultBuilder()
-                    .homeTeam(teamNames.get(homeTeam))
-                    .homeTeamCountry(teamCountries.get(homeTeam))
-                    .awayTeam(teamNames.get(awayTeam))
-                    .awayTeamCountry(teamCountries.get(awayTeam))
-                    .city(dataStorage.getEvents().get(i).getVenue().getCityName())
-                    .stadium(dataStorage.getEvents().get(i).getVenue().getName())
-                    .date(dataStorage.getEvents().get(i).getStartDate().substring(0, DATE_LENGTH))
-                    .skirmishResult(skirmishResult)
-                    .highestProbability(probability)
-                    .build()
-            );
-        }
+    private void addResult(int currentIndex, String skirmishResult, double probability) {
+        int homeTeamIndex = calculateHomeTeamIndex(currentIndex);
+        int awayTeamIndex = calculateAwayTeamIndex(homeTeamIndex);
+        String homeTeamName = getCompetitors(currentIndex).get(homeTeamIndex).getName();
+        String homeTeamCountry = getCompetitors(currentIndex).get(homeTeamIndex).getCountry();
+        String awayTeamName = getCompetitors(currentIndex).get(awayTeamIndex).getName();
+        String awayTeamCountry = getCompetitors(currentIndex).get(awayTeamIndex).getCountry();
+        dataStorage.addResult(currentIndex, homeTeamName, awayTeamName, homeTeamCountry, awayTeamCountry, DATE_LENGTH, skirmishResult, probability);
     }
 
     private int calculateAwayTeamIndex(int homeTeam) {
         return homeTeam + 1;
     }
 
-    private int calculateHomeTeamIndex(int i) {
-        return i * 2;
+    private int calculateHomeTeamIndex(int currentIndex) {
+        return currentIndex * 2;
     }
 
     private void sortListByProbability() {
-        results.sort(Comparator.comparing(Result::getHighestProbability));
+        dataStorage.getResults().sort(Comparator.comparing(Result::getHighestProbability));
     }
 
     private boolean isRangeValid(Integer range) {
