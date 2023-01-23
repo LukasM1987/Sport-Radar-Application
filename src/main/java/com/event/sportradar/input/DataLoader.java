@@ -3,7 +3,7 @@ package com.event.sportradar.input;
 import com.event.sportradar.domain.Venue;
 import com.github.tsohr.JSONArray;
 import com.github.tsohr.JSONObject;
-import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -12,9 +12,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-@Getter
 @Component
+@RequiredArgsConstructor
 public class DataLoader {
+
+    private final DataStorage dataStorage;
 
     @EventListener(ApplicationReadyEvent.class)
     public void readFile() {
@@ -29,19 +31,19 @@ public class DataLoader {
             JSONArray competitorsArray = eventObject.getJSONArray("competitors");
             Venue venue = readVenue(eventObject);
             readCompetitors(competitorsArray);
-            DataStorage.addEvent(eventObject, venue);
+            dataStorage.addEvent(eventObject, venue);
         }
     }
 
     private void readCompetitors(JSONArray competitorsArray) {
         for (int i = 0; i < competitorsArray.length(); i++) {
             JSONObject competitorObject = competitorsArray.getJSONObject(i);
-            DataStorage.addCompetitor(competitorObject);
+            dataStorage.addCompetitor(competitorObject);
         }
     }
 
     private Venue readVenue(JSONObject eventObject) {
-        return DataStorage.createVenue(eventObject);
+        return dataStorage.createVenue(eventObject);
     }
 
     private JSONObject convertFile() {

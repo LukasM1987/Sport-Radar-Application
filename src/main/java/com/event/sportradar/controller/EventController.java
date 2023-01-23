@@ -19,7 +19,7 @@ public class EventController {
         sportRadarService.printAllCompetitorsAlphabetically();
     }
 
-    @GetMapping(value = "probabilities")
+    @GetMapping(value = "/probabilities")
     public void getProbabilities(@RequestParam(required = false) final Integer range) {
         sportRadarService.compareProbability(range);
     }

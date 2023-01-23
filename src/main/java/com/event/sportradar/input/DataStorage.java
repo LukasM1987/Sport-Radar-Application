@@ -2,21 +2,26 @@ package com.event.sportradar.input;
 
 import com.event.sportradar.domain.Competitor;
 import com.event.sportradar.domain.Event;
+import com.event.sportradar.domain.Result;
 import com.event.sportradar.domain.Venue;
 import com.github.tsohr.JSONException;
 import com.github.tsohr.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class DataStorage {
 
-    private static final List<Event> events = new ArrayList<>();
-    private static final List<Competitor> competitors = new ArrayList<>();
+    private final List<Event> events = new ArrayList<>();
+    private final List<Competitor> competitors = new ArrayList<>();
+    private final List<Result> results = new ArrayList<>();
+    private final Set<String> teamsSet = new HashSet<>();
 
-    public static void addEvent(JSONObject eventObject, Venue venue) {
+    public void addEvent(JSONObject eventObject, Venue venue) {
         events.add(new Event(
                 eventObject.getString("sport_event_id"),
                 eventObject.getString("start_date"),
@@ -32,7 +37,7 @@ public class DataStorage {
         ));
     }
 
-    public static boolean addCompetitor(JSONObject competitorObject) {
+    public boolean addCompetitor(JSONObject competitorObject) {
         return competitors.add(new Competitor(
                 competitorObject.getString("id"),
                 competitorObject.getString("name"),
@@ -44,7 +49,7 @@ public class DataStorage {
         ));
     }
 
-    public static Venue createVenue(JSONObject eventObject) {
+    public Venue createVenue(JSONObject eventObject) {
         Venue venue;
         try {
             JSONObject venueObject = eventObject.getJSONObject("venue");
@@ -63,7 +68,47 @@ public class DataStorage {
         return venue;
     }
 
+    public void addResult(int currentIndex, String homeTeamName, String awayTeamName, String homeTeamCountry, String awayTeamCountry, int dateLength, String skirmishResult, double probability) {
+        if (events.get(currentIndex).getVenue() == null) {
+            results.add(Result.builder()
+                    .homeTeam(homeTeamName)
+                    .homeTeamCountry(homeTeamCountry)
+                    .awayTeam(awayTeamName)
+                    .awayTeamCountry(awayTeamCountry)
+                    .date(events.get(currentIndex).getStartDate().substring(0, dateLength))
+                    .skirmishResult(skirmishResult)
+                    .highestProbability(probability)
+                    .build()
+            );
+        } else {
+            results.add(Result.builder()
+                    .homeTeam(homeTeamName)
+                    .homeTeamCountry(homeTeamCountry)
+                    .awayTeam(awayTeamName)
+                    .awayTeamCountry(awayTeamCountry)
+                    .city(events.get(currentIndex).getVenue().getCityName())
+                    .stadium(events.get(currentIndex).getVenue().getName())
+                    .date(events.get(currentIndex).getStartDate().substring(0, dateLength))
+                    .skirmishResult(skirmishResult)
+                    .highestProbability(probability)
+                    .build()
+            );
+        }
+    }
+
+    public void addTeamsNames(int firstIndex, int secondIndex) {
+        teamsSet.add(events.get(firstIndex).getCompetitors().get(secondIndex).getName());
+    }
+
     public List<Event> getEvents() {
         return events;
+    }
+
+    public Set<String> getTeamNamesSet() {
+        return teamsSet;
+    }
+
+    public List<Result> getResults() {
+        return results;
     }
 }
