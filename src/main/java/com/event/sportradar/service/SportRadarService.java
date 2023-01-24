@@ -29,7 +29,6 @@ public class SportRadarService {
             return;
         }
         for (int i = 0; i < dataStorage.getEvents().size(); i++) {
-            getCompetitors(i);
             compareProbability(i);
         }
         sortListByProbability();
@@ -41,13 +40,22 @@ public class SportRadarService {
     }
 
     public void printAllCompetitorsAlphabetically() {
-        for (int i = 0; i < dataStorage.getEvents().size(); i++) {
-            for (int j = 0; j < dataStorage.getEvents().get(i).getCompetitors().size(); j++) {
-                dataStorage.addTeamsNames(i, j);
-            }
-        }
-        TreeSet<String> treeSet = new TreeSet<>(dataStorage.getTeamNamesSet());
+        addTeamsNamesToSet();
+        TreeSet<String> treeSet = sortNames();
         Printer.printCompetitors(treeSet);
+    }
+
+    private TreeSet<String> sortNames() {
+        return new TreeSet<>(dataStorage.getTeamNamesSet());
+    }
+
+    private void addTeamsNamesToSet() {
+        for (int i = 0; i < dataStorage.getEvents().size(); i++) {
+            int homeTeamName = calculateHomeTeamIndex(i);
+            int awayTeamName = calculateAwayTeamIndex(homeTeamName);
+            dataStorage.addTeamsNames(getCompetitors(i).get(homeTeamName).getName());
+            dataStorage.addTeamsNames(getCompetitors(i).get(awayTeamName).getName());
+        }
     }
 
     private void compareProbability(int currentIndex) {
