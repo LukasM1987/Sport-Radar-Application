@@ -1,7 +1,10 @@
 package com.event.sportradar.input;
 
+import com.event.sportradar.domain.Competitor;
+import com.event.sportradar.domain.Event;
 import com.event.sportradar.domain.Venue;
 import com.github.tsohr.JSONArray;
+import com.github.tsohr.JSONException;
 import com.github.tsohr.JSONObject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -11,12 +14,15 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class DataLoader {
 
     private final DataStorage dataStorage;
+    private final List<Competitor> competitors = new ArrayList<>();
 
     @EventListener(ApplicationReadyEvent.class)
     public void readFile() {
@@ -29,21 +35,57 @@ public class DataLoader {
         for(int i = 0; i < jsonArray.length(); i++) {
             JSONObject eventObject = jsonArray.getJSONObject(i);
             JSONArray competitorsArray = eventObject.getJSONArray("competitors");
-            Venue venue = readVenue(eventObject);
+            Venue venue = createVenue(eventObject);
             readCompetitors(competitorsArray);
-            dataStorage.addEvent(eventObject, venue);
+            Event event = new Event(
+                    eventObject.getString("sport_event_id"),
+                    eventObject.getString("start_date"),
+                    eventObject.getString("sport_name"),
+                    eventObject.getString("competition_name"),
+                    eventObject.getString("competition_id"),
+                    eventObject.getString("season_name"),
+                    competitors,
+                    venue,
+                    eventObject.getDouble("probability_home_team_winner"),
+                    eventObject.getDouble("probability_draw"),
+                    eventObject.getDouble("probability_away_team_winner")
+            );
+            dataStorage.addEvent(event);
         }
     }
 
     private void readCompetitors(JSONArray competitorsArray) {
         for (int i = 0; i < competitorsArray.length(); i++) {
             JSONObject competitorObject = competitorsArray.getJSONObject(i);
-            dataStorage.addCompetitor(competitorObject);
+            competitors.add(new Competitor(
+                    competitorObject.getString("id"),
+                    competitorObject.getString("name"),
+                    competitorObject.getString("country"),
+                    competitorObject.getString("country_code"),
+                    competitorObject.getString("abbreviation"),
+                    competitorObject.getString("qualifier"),
+                    competitorObject.getString("gender")
+            ));
         }
     }
 
-    private Venue readVenue(JSONObject eventObject) {
-        return dataStorage.createVenue(eventObject);
+    private Venue createVenue(JSONObject eventObject) {
+        Venue venue;
+        try {
+            JSONObject venueObject = eventObject.getJSONObject("venue");
+            venue = new Venue(
+                    venueObject.getString("id"),
+                    venueObject.getString("name"),
+                    venueObject.getInt("capacity"),
+                    venueObject.getString("city_name"),
+                    venueObject.getString("country_name"),
+                    venueObject.getString("map_coordinates"),
+                    venueObject.getString("country_code")
+            );
+        } catch (JSONException ignored) {
+            venue = null;
+        }
+        return venue;
     }
 
     private JSONObject convertFile() {
