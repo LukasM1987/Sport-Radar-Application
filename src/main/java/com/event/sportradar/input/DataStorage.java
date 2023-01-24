@@ -96,8 +96,8 @@ public class DataStorage {
         }
     }
 
-    public void addTeamsNames(int firstIndex, int secondIndex) {
-        teamsSet.add(events.get(firstIndex).getCompetitors().get(secondIndex).getName());
+    public void addTeamsNames(String name) {
+        teamsSet.add(name);
     }
 
     public List<Event> getEvents() {
